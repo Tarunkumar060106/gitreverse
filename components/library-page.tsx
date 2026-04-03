@@ -56,7 +56,7 @@ export function LibraryPage({ initialData, initialTotal }: LibraryPageProps) {
       searchVal: string,
       sortVal: SortOption,
       pageVal: number,
-      append: boolean
+      append: boolean,
     ) => {
       const params = new URLSearchParams({
         search: searchVal,
@@ -75,7 +75,7 @@ export function LibraryPage({ initialData, initialTotal }: LibraryPageProps) {
       setTotal(json.total);
       setPage(pageVal);
     },
-    []
+    [],
   );
 
   // Debounce search + sort changes (skip very first render — SSR data is fresh)
@@ -112,11 +112,11 @@ export function LibraryPage({ initialData, initialTotal }: LibraryPageProps) {
             href="/"
             className="text-xl font-bold tracking-tight hover:opacity-80 transition-opacity"
           >
-            <span className="text-zinc-900">Git</span>
-            <span className="text-[#d31611]">Reverse</span>
+            <span className="text-zinc-900">Reverse</span>
+            <span className="text-[#d31611]">Git</span>
           </Link>
           <a
-            href="https://github.com/filiksyos/gitreverse"
+            href="https://github.com/filiksyos/reversegit"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 font-semibold text-zinc-900 transition-transform hover:-translate-y-0.5"
@@ -225,7 +225,7 @@ export function LibraryPage({ initialData, initialTotal }: LibraryPageProps) {
                   <option key={val} value={val}>
                     {label}
                   </option>
-                )
+                ),
               )}
             </select>
             <svg
@@ -237,7 +237,11 @@ export function LibraryPage({ initialData, initialTotal }: LibraryPageProps) {
               strokeWidth={2.5}
               aria-hidden="true"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="m6 9 6 6 6-6"
+              />
             </svg>
           </div>
         </div>
@@ -270,7 +274,9 @@ export function LibraryPage({ initialData, initialTotal }: LibraryPageProps) {
         {entries.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-24 text-center">
             <span className="text-4xl">∅</span>
-            <p className="text-lg font-semibold text-zinc-700">No prompts found</p>
+            <p className="text-lg font-semibold text-zinc-700">
+              No prompts found
+            </p>
             <p className="text-zinc-500">Try a different search term.</p>
           </div>
         ) : (
@@ -365,7 +371,9 @@ function PromptCard({ entry }: { entry: PromptEntry }) {
     <div
       className="group relative block cursor-pointer"
       onClick={() => router.push(href)}
-      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") router.push(href); }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") router.push(href);
+      }}
       role="link"
       tabIndex={0}
       aria-label={`${entry.owner}/${entry.repo}`}
@@ -390,14 +398,26 @@ function PromptCard({ entry }: { entry: PromptEntry }) {
             className="shrink-0 rounded p-1 text-zinc-400 transition-colors hover:text-zinc-900"
             aria-label={`View ${entry.owner}/${entry.repo} on GitHub`}
           >
-            <svg className="h-4 w-4" viewBox="0 0 98 96" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <path fillRule="evenodd" clipRule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.096-.08-9.211-13.588 2.963-16.424-5.867-16.424-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.613-10.839-1.22-22.229-5.412-22.229-24.054 0-5.312 1.895-9.718 5.424-13.126-.526-1.324-2.356-6.74.505-14.052 0 0 4.432-1.505 14.5 5.008 4.172-1.095 8.73-1.63 13.168-1.656 4.469.026 8.971.561 13.166 1.656 10.06-6.513 14.48-5.008 14.48-5.008 2.866 7.326 1.052 12.728.53 14.052 3.532 3.408 5.414 7.814 5.414 13.126 0 18.728-11.401 22.813-22.285 23.985 1.772 1.514 3.316 4.539 3.316 9.119 0 6.613-.08 11.898-.08 13.526 0 1.304.878 2.853 3.316 2.364C84.974 89.385 98 70.983 98 49.204 98 22 76.038 0 48.854 0z" fill="currentColor" />
+            <svg
+              className="h-4 w-4"
+              viewBox="0 0 98 96"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.096-.08-9.211-13.588 2.963-16.424-5.867-16.424-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.613-10.839-1.22-22.229-5.412-22.229-24.054 0-5.312 1.895-9.718 5.424-13.126-.526-1.324-2.356-6.74.505-14.052 0 0 4.432-1.505 14.5 5.008 4.172-1.095 8.73-1.63 13.168-1.656 4.469.026 8.971.561 13.166 1.656 10.06-6.513 14.48-5.008 14.48-5.008 2.866 7.326 1.052 12.728.53 14.052 3.532 3.408 5.414 7.814 5.414 13.126 0 18.728-11.401 22.813-22.285 23.985 1.772 1.514 3.316 4.539 3.316 9.119 0 6.613-.08 11.898-.08 13.526 0 1.304.878 2.853 3.316 2.364C84.974 89.385 98 70.983 98 49.204 98 22 76.038 0 48.854 0z"
+                fill="currentColor"
+              />
             </svg>
           </a>
         </div>
 
         {/* Prompt preview */}
-        <p className="flex-1 text-sm leading-relaxed text-zinc-600">{truncated}</p>
+        <p className="flex-1 text-sm leading-relaxed text-zinc-600">
+          {truncated}
+        </p>
 
         {/* Footer */}
         <div className="flex items-center justify-between">

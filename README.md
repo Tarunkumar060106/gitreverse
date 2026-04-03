@@ -1,4 +1,4 @@
-# GitReverse
+# ReverseGit
 
 https://github.com/user-attachments/assets/f0cdb7b2-c6f0-4483-8a01-153170479f2e
 

@@ -9,7 +9,7 @@ type UnoReverseLogoProps = {
 
 export function UnoReverseLogo({
   className,
-  title = "GitReverse",
+  title = "ReverseGit",
 }: UnoReverseLogoProps) {
   return (
     <svg

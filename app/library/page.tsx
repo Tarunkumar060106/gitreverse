@@ -4,7 +4,7 @@ import { LibraryPage } from "@/components/library-page";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Prompt Library — GitReverse",
+  title: "Prompt Library — ReverseGit",
   description:
     "Browse 1,000+ reverse-engineered prompts from real GitHub repositories.",
 };

@@ -7,7 +7,7 @@ const GITHUB_API = "https://api.github.com";
 function githubHeaders(): HeadersInit {
   const headers: HeadersInit = {
     Accept: "application/vnd.github.v3+json",
-    "User-Agent": "gitreverse/1.0.0",
+    "User-Agent": "reversegit/1.0.0",
   };
   const token = process.env.GITHUB_TOKEN;
   if (token) {
@@ -55,7 +55,10 @@ interface GitHubRepoResponse {
   default_branch: string;
 }
 
-export async function getRepoMeta(owner: string, repo: string): Promise<RepoMeta> {
+export async function getRepoMeta(
+  owner: string,
+  repo: string,
+): Promise<RepoMeta> {
   const res = await fetch(`${GITHUB_API}/repos/${owner}/${repo}`, {
     headers: githubHeaders(),
   });
@@ -86,12 +89,15 @@ export async function getRepoMeta(owner: string, repo: string): Promise<RepoMeta
 export async function getFileTree(
   owner: string,
   repo: string,
-  branch: string = "main"
-): Promise<{ tree: Array<{ path: string; type: string }>; truncated: boolean }> {
+  branch: string = "main",
+): Promise<{
+  tree: Array<{ path: string; type: string }>;
+  truncated: boolean;
+}> {
   const doFetch = async (b: string, isRetry: boolean) => {
     const branchRes = await fetch(
       `${GITHUB_API}/repos/${owner}/${repo}/branches/${b}`,
-      { headers: githubHeaders() }
+      { headers: githubHeaders() },
     );
 
     if (branchRes.status === 401) {
@@ -109,7 +115,7 @@ export async function getFileTree(
     }
     if (!branchRes.ok) {
       throw new Error(
-        `GitHub API error: ${branchRes.status} ${branchRes.statusText}`
+        `GitHub API error: ${branchRes.status} ${branchRes.statusText}`,
       );
     }
 
@@ -118,7 +124,7 @@ export async function getFileTree(
 
     const treeRes = await fetch(
       `${GITHUB_API}/repos/${owner}/${repo}/git/trees/${treeSha}?recursive=1`,
-      { headers: githubHeaders() }
+      { headers: githubHeaders() },
     );
 
     if (treeRes.status === 401) {
@@ -128,7 +134,9 @@ export async function getFileTree(
       throw new Error("GitHub API rate limit exceeded or access denied.");
     }
     if (!treeRes.ok) {
-      throw new Error(`GitHub API error: ${treeRes.status} ${treeRes.statusText}`);
+      throw new Error(
+        `GitHub API error: ${treeRes.status} ${treeRes.statusText}`,
+      );
     }
 
     const treeData = (await treeRes.json()) as GitHubTreeResponse;
@@ -145,12 +153,12 @@ export async function readFile(
   owner: string,
   repo: string,
   path: string,
-  branch: string = "main"
+  branch: string = "main",
 ): Promise<string> {
   const doFetch = async (b: string, isRetry: boolean) => {
     const res = await fetch(
       `${GITHUB_API}/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}?ref=${encodeURIComponent(b)}`,
-      { headers: githubHeaders() }
+      { headers: githubHeaders() },
     );
 
     if (res.status === 401) {
@@ -180,12 +188,12 @@ export async function readFile(
 export async function getReadme(
   owner: string,
   repo: string,
-  branch: string = "main"
+  branch: string = "main",
 ): Promise<string> {
   const doFetch = async (b: string, isRetry: boolean) => {
     const res = await fetch(
       `${GITHUB_API}/repos/${owner}/${repo}/readme?ref=${encodeURIComponent(b)}`,
-      { headers: githubHeaders() }
+      { headers: githubHeaders() },
     );
 
     if (res.status === 401) {
