@@ -6,8 +6,7 @@ import { parseGitHubRepoInput } from "@/lib/parse-github-repo";
 import { getSupabase } from "@/lib/supabase";
 
 const README_MAX_CHARS = 8000;
-const GOOGLE_AI_STUDIO_URL =
-  "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 const inFlight = new Map<string, Promise<{ prompt: string } | NextResponse>>();
 
@@ -17,7 +16,7 @@ function buildUserMessage(
   meta: Awaited<ReturnType<typeof getRepoMeta>>,
   depth1Tree: string,
   readme: string,
-  truncatedTree: boolean
+  truncatedTree: boolean,
 ): string {
   const topicsLine =
     meta.topics.length > 0 ? `\n**Topics:** ${meta.topics.join(", ")}` : "";
@@ -35,7 +34,9 @@ function buildUserMessage(
     `**Stars:** ${meta.stargazers_count}`,
     `**Default branch:** ${meta.default_branch}`,
     topicsLine,
-    truncatedTree ? "\n**Note:** Full repository tree was truncated by GitHub." : "",
+    truncatedTree
+      ? "\n**Note:** Full repository tree was truncated by GitHub."
+      : "",
     "",
     "## Root file tree (depth 1)",
     "",
@@ -66,7 +67,7 @@ function extractMessage(data: unknown): string | null {
       .map((part) =>
         part && typeof part === "object" && "text" in part
           ? String((part as { text: unknown }).text)
-          : ""
+          : "",
       )
       .join("");
     return text.trim() || null;
@@ -86,7 +87,7 @@ export async function POST(request: NextRequest) {
   if (typeof repoUrl !== "string") {
     return NextResponse.json(
       { error: "repoUrl is required (string)" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -97,22 +98,23 @@ export async function POST(request: NextRequest) {
         error:
           "Could not parse a GitHub repo. Use a URL like https://github.com/owner/repo or owner/repo.",
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   const { owner, repo } = parsed;
 
-  const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY?.trim();
+  const apiKey = process.env.OPENROUTER_API_KEY?.trim();
   if (!apiKey) {
     return NextResponse.json(
-      { error: "GOOGLE_GENERATIVE_AI_API_KEY is not configured." },
-      { status: 500 }
+      { error: "OPENROUTER_API_KEY is not configured." },
+      { status: 500 },
     );
   }
 
   const model =
-    process.env.GOOGLE_AI_STUDIO_MODEL?.trim() || "gemini-2.5-pro";
+    process.env.OPENROUTER_MODEL?.trim() ||
+    "mistralai/mistral-7b-instruct:free";
 
   const key = `${owner}/${repo}`;
   const existing = inFlight.get(key);
@@ -157,7 +159,10 @@ export async function POST(request: NextRequest) {
 
     const branch = meta.default_branch;
 
-    let tree: { tree: Array<{ path: string; type: string }>; truncated: boolean };
+    let tree: {
+      tree: Array<{ path: string; type: string }>;
+      truncated: boolean;
+    };
     let readme: string;
     try {
       [tree, readme] = await Promise.all([
@@ -174,7 +179,7 @@ export async function POST(request: NextRequest) {
       tree.tree,
       `${owner}/${repo}`,
       undefined,
-      1
+      1,
     );
 
     const userContent = buildUserMessage(
@@ -183,12 +188,12 @@ export async function POST(request: NextRequest) {
       meta,
       depth1Tree,
       readme,
-      tree.truncated
+      tree.truncated,
     );
 
     let res: Response;
     try {
-      res = await fetch(GOOGLE_AI_STUDIO_URL, {
+      res = await fetch(OPENROUTER_URL, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${apiKey}`,
@@ -204,10 +209,10 @@ export async function POST(request: NextRequest) {
       });
     } catch (e) {
       const message =
-        e instanceof Error ? e.message : "Google AI Studio request failed";
+        e instanceof Error ? e.message : "OpenRouter request failed";
       return NextResponse.json(
         { error: `Generation failed: ${message}` },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -216,8 +221,8 @@ export async function POST(request: NextRequest) {
       data = await res.json();
     } catch {
       return NextResponse.json(
-        { error: "Google AI Studio returned invalid JSON." },
-        { status: 502 }
+        { error: "OpenRouter returned invalid JSON." },
+        { status: 502 },
       );
     }
 
@@ -225,7 +230,7 @@ export async function POST(request: NextRequest) {
       const errObj = data as { error?: { message?: string } };
       const msg =
         errObj?.error?.message ??
-        `Google AI Studio error ${res.status}: ${JSON.stringify(data).slice(0, 300)}`;
+        `OpenRouter error ${res.status}: ${JSON.stringify(data).slice(0, 300)}`;
       const lower = msg.toLowerCase();
       const isAuth =
         res.status === 401 ||
@@ -234,12 +239,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: isAuth
-            ? "Google AI Studio authentication failed. Check GOOGLE_GENERATIVE_AI_API_KEY in .env.local."
+            ? "OpenRouter authentication failed. Check OPENROUTER_API_KEY in .env.local."
             : `Generation failed: ${msg}`,
         },
         {
-          status: isAuth ? 401 : res.status >= 400 && res.status < 600 ? res.status : 502,
-        }
+          status: isAuth
+            ? 401
+            : res.status >= 400 && res.status < 600
+              ? res.status
+              : 502,
+        },
       );
     }
 
@@ -247,7 +256,7 @@ export async function POST(request: NextRequest) {
     if (!prompt) {
       return NextResponse.json(
         { error: "Model did not return a usable text response." },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -262,13 +271,13 @@ export async function POST(request: NextRequest) {
             prompt,
             cached_at: new Date().toISOString(),
           },
-          { onConflict: "owner,repo" }
+          { onConflict: "owner,repo" },
         )
         .then(({ error: upsertError }) => {
           if (upsertError) {
             console.error(
               "[reverse-prompt] cache upsert:",
-              upsertError.message
+              upsertError.message,
             );
           }
         });

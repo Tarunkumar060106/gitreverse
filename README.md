@@ -14,7 +14,7 @@ Next.js (App Router), React, TypeScript, Tailwind CSS, GitHub API, OpenRouter.
 
 ## Configuration
 
-Copy `.env.example` to `.env.local`. You need **`OPENROUTER_API_KEY`**. Optional: `OPENROUTER_MODEL` (defaults to `google/gemini-2.5-pro`), `GITHUB_TOKEN` for better GitHub rate limits, and Supabase env vars from the example file if you want server-side caching.
+Copy `.env.example` to `.env.local`. You need **`OPENROUTER_API_KEY`**. Optional: `OPENROUTER_MODEL` (defaults to `mistralai/mistral-7b-instruct:free`), `GITHUB_TOKEN` for better GitHub rate limits, and Supabase env vars from the example file if you want server-side caching.
 
 ## Development
 
